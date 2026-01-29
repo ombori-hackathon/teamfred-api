@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from app.schemas.tag import TagResponse
+
 
 class IdeaBase(BaseModel):
     title: str
@@ -15,6 +17,8 @@ class IdeaCreate(IdeaBase):
     width: float = 200.0
     height: float = 150.0
     rotation: float = 0.0
+    board_id: int | None = None
+    tag_ids: list[int] = []
 
 
 class IdeaUpdatePosition(BaseModel):
@@ -32,6 +36,10 @@ class IdeaUpdateContent(BaseModel):
     description: str | None = None
 
 
+class IdeaUpdateTags(BaseModel):
+    tag_ids: list[int]
+
+
 class IdeaResponse(IdeaBase):
     id: int
     position_x: float
@@ -41,6 +49,8 @@ class IdeaResponse(IdeaBase):
     rotation: float
     votes: int
     created_at: datetime
+    board_id: int | None = None
+    tags: list[TagResponse] = []
 
     class Config:
         from_attributes = True

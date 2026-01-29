@@ -5,9 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from app.db import Base, engine, get_db
+from app.models.board import Board as BoardModel
 from app.models.idea import Idea as IdeaModel
 from app.models.item import Item as ItemModel
-from app.routers import ideas
+from app.models.tag import Tag as TagModel
+from app.routers import ai, boards, ideas, tags
 from app.schemas.item import Item as ItemSchema
 
 
@@ -32,9 +34,51 @@ def seed_database(db: Session):
         print("Database seeded with sample items")
 
 
+def seed_boards_and_tags(db: Session):
+    """Seed the database with sample boards and tags if empty"""
+    if db.query(BoardModel).count() == 0:
+        sample_boards = [
+            BoardModel(
+                name="Hackathon Ideas",
+                description="Ideas for our hackathon project",
+                color="#3b82f6",
+            ),
+            BoardModel(
+                name="Future Features",
+                description="Features to consider for future releases",
+                color="#22c55e",
+            ),
+        ]
+        db.add_all(sample_boards)
+        db.commit()
+        print("Database seeded with sample boards")
+
+    if db.query(TagModel).count() == 0:
+        sample_tags = [
+            TagModel(name="ai", color="#8b5cf6"),
+            TagModel(name="ux", color="#ec4899"),
+            TagModel(name="backend", color="#3b82f6"),
+            TagModel(name="frontend", color="#22c55e"),
+            TagModel(name="priority", color="#ef4444"),
+        ]
+        db.add_all(sample_tags)
+        db.commit()
+        print("Database seeded with sample tags")
+
+
 def seed_ideas(db: Session):
     """Seed the database with sample ideas if empty"""
     if db.query(IdeaModel).count() == 0:
+        # Get the first board to assign ideas to
+        board = db.query(BoardModel).first()
+        board_id = board.id if board else None
+
+        # Get some tags
+        ai_tag = db.query(TagModel).filter(TagModel.name == "ai").first()
+        ux_tag = db.query(TagModel).filter(TagModel.name == "ux").first()
+        backend_tag = db.query(TagModel).filter(TagModel.name == "backend").first()
+        priority_tag = db.query(TagModel).filter(TagModel.name == "priority").first()
+
         sample_ideas = [
             IdeaModel(
                 title="AI-powered code review",
@@ -43,6 +87,7 @@ def seed_ideas(db: Session):
                 position_x=100,
                 position_y=100,
                 votes=5,
+                board_id=board_id,
             ),
             IdeaModel(
                 title="Smart home dashboard",
@@ -51,6 +96,7 @@ def seed_ideas(db: Session):
                 position_x=350,
                 position_y=150,
                 votes=3,
+                board_id=board_id,
             ),
             IdeaModel(
                 title="Team mood tracker",
@@ -59,6 +105,7 @@ def seed_ideas(db: Session):
                 position_x=600,
                 position_y=100,
                 votes=7,
+                board_id=board_id,
             ),
             IdeaModel(
                 title="Carbon footprint calculator",
@@ -67,6 +114,7 @@ def seed_ideas(db: Session):
                 position_x=150,
                 position_y=350,
                 votes=2,
+                board_id=board_id,
             ),
             IdeaModel(
                 title="Habit gamification app",
@@ -75,10 +123,24 @@ def seed_ideas(db: Session):
                 position_x=450,
                 position_y=400,
                 votes=4,
+                board_id=board_id,
             ),
         ]
         db.add_all(sample_ideas)
         db.commit()
+
+        # Add tags to some ideas
+        ideas = db.query(IdeaModel).all()
+        if ai_tag and len(ideas) > 0:
+            ideas[0].tags.append(ai_tag)
+        if backend_tag and len(ideas) > 0:
+            ideas[0].tags.append(backend_tag)
+        if ux_tag and len(ideas) > 1:
+            ideas[1].tags.append(ux_tag)
+        if priority_tag and len(ideas) > 2:
+            ideas[2].tags.append(priority_tag)
+        db.commit()
+
         print("Database seeded with sample ideas")
 
 
@@ -88,6 +150,7 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     db = next(get_db())
     seed_database(db)
+    seed_boards_and_tags(db)
     seed_ideas(db)
     db.close()
     yield
@@ -136,4 +199,7 @@ async def get_item(item_id: int, db: Session = Depends(get_db)):
 
 
 # Include routers
+app.include_router(ai.router)
+app.include_router(boards.router)
 app.include_router(ideas.router)
+app.include_router(tags.router)

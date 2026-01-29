@@ -1,7 +1,9 @@
-from sqlalchemy import Column, DateTime, Float, Integer, String
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.db import Base
+from app.models.tag import idea_tags
 
 
 class Idea(Base):
@@ -18,3 +20,10 @@ class Idea(Base):
     rotation = Column(Float, default=0.0)
     votes = Column(Integer, default=0)
     created_at = Column(DateTime, server_default=func.now())
+
+    # Board relationship
+    board_id = Column(Integer, ForeignKey("boards.id"), nullable=True)
+    board = relationship("Board", back_populates="ideas")
+
+    # Tags relationship
+    tags = relationship("Tag", secondary=idea_tags, back_populates="ideas")
