@@ -13,5 +13,8 @@ class Idea(Base):
     color = Column(String(20), default="yellow")
     position_x = Column(Float, default=100.0)
     position_y = Column(Float, default=100.0)
+    width = Column(Float, default=200.0)
+    height = Column(Float, default=150.0)
+    rotation = Column(Float, default=0.0)
     votes = Column(Integer, default=0)
     created_at = Column(DateTime, server_default=func.now())
