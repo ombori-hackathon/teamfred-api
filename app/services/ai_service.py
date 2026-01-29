@@ -128,7 +128,7 @@ def auto_categorize_idea(
                 "content": f"""Suggest tags for this idea:
 
 Title: {title}
-Description: {description or 'No description'}
+Description: {description or "No description"}
 
 Existing tags in the system: {existing_tags_text}
 

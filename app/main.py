@@ -9,7 +9,7 @@ from app.models.board import Board as BoardModel
 from app.models.idea import Idea as IdeaModel
 from app.models.item import Item as ItemModel
 from app.models.tag import Tag as TagModel
-from app.routers import ai, boards, ideas, tags
+from app.routers import ai, boards, connections, groups, ideas, tags
 from app.schemas.item import Item as ItemSchema
 
 
@@ -201,5 +201,7 @@ async def get_item(item_id: int, db: Session = Depends(get_db)):
 # Include routers
 app.include_router(ai.router)
 app.include_router(boards.router)
+app.include_router(connections.router)
+app.include_router(groups.router)
 app.include_router(ideas.router)
 app.include_router(tags.router)

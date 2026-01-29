@@ -25,5 +25,11 @@ class Idea(Base):
     board_id = Column(Integer, ForeignKey("boards.id"), nullable=True)
     board = relationship("Board", back_populates="ideas")
 
+    # Group relationship
+    group_id = Column(
+        Integer, ForeignKey("idea_groups.id", ondelete="SET NULL"), nullable=True
+    )
+    group = relationship("IdeaGroup", back_populates="ideas")
+
     # Tags relationship
     tags = relationship("Tag", secondary=idea_tags, back_populates="ideas")

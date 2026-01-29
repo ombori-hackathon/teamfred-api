@@ -50,6 +50,7 @@ class IdeaResponse(IdeaBase):
     votes: int
     created_at: datetime
     board_id: int | None = None
+    group_id: int | None = None
     tags: list[TagResponse] = []
 
     class Config:
